@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<meta name="theme-color" content="#0F0F12" />
+<title>glou — take care of yourself with love</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,800&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F1ECE2;
+    --ink: #0F0F12;
+    --ink-soft: #2A2A30;
+    --muted: #8A8680;
+    --line: #0F0F12;
+    --card: #FAF7F0;
+    --acid: #ff3ca1;
+    --coral: #bf0000;
+    --peri: #C9D4F5;
+    --rose: #F4C6C1;
+    --sage: #C3D4B8;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: 'Inter Tight', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+    font-feature-settings: "ss01", "cv11";
+    letter-spacing: -0.01em;
+  }
+  /* subtle grain */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.08 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 0;
+  }
+  .app { max-width: 520px; margin: 0 auto; padding: 20px 18px 120px; position: relative; z-index: 1; }
+
+  /* icons */
+  .ic { width: 16px; height: 16px; stroke-width: 1.8; stroke: currentColor; fill: none; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+  .ic.sm { width: 14px; height: 14px; }
+  .ic.lg { width: 20px; height: 20px; }
+  .ic.xl { width: 24px; height: 24px; }
+
+  /* header */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
+    padding-top: 8px;
+  }
+  .logo {
+    font-family: 'Fraunces', serif;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -1.5px;
+    line-height: 1;
+    display: flex; align-items: baseline; gap: 2px;
+  }
+  .logo .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--coral);
+    display: inline-block; margin-left: 1px;
+  }
+  .date-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: transparent;
+    color: var(--ink);
+    padding: 6px 12px;
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  /* hero affirmation */
+  .affirm {
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 18px;
+    padding: 22px 22px 24px;
+    margin-bottom: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .affirm-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--acid);
+    margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .affirm-label .ic { stroke: var(--acid); }
+  .affirm-text {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 24px;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+  }
+  .affirm-text em { font-style: italic; color: var(--acid); font-weight: 600; }
+
+  /* tabs */
+  .tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 20px;
+    background: var(--card);
+    border: 1px solid var(--ink);
+    border-radius: 14px;
+    padding: 5px;
+  }
+  .tab {
+    background: transparent;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 6px;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.2s ease;
+    letter-spacing: -0.2px;
+  }
+  .tab:active { transform: scale(0.97); }
+  .tab.active { background: var(--ink); color: var(--bg); }
+
+  /* panels */
+  .panel { display: none; animation: fadeIn 0.25s ease; }
+  .panel.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--ink);
+    border-radius: 18px;
+    padding: 22px;
+    margin-bottom: 12px;
+  }
+  .card.flat { background: transparent; border: 1px dashed rgba(15,15,18,0.3); }
+
+  .card-title {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.8px;
+    margin: 0 0 4px;
+    line-height: 1.1;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 18px;
+    line-height: 1.4;
+  }
+
+  /* forms */
+  label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+  }
+  input, select, textarea {
+    width: 100%;
+    padding: 13px 14px;
+    border: 1px solid rgba(15,15,18,0.2);
+    border-radius: 10px;
+    font-family: 'Inter Tight', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    background: #fff;
+    color: var(--ink);
+    margin-bottom: 14px;
+    -webkit-appearance: none;
+    appearance: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ink);
+    box-shadow: 0 0 0 3px rgba(15,15,18,0.08);
+  }
+  textarea { resize: vertical; min-height: 80px; }
+  select {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%230F0F12' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+  }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  button.cta {
+    width: 100%;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1px solid var(--ink);
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.1s ease, background 0.15s ease;
+    letter-spacing: 0.2px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  button.cta:active { transform: scale(0.98); }
+  button.cta.acid { background: var(--acid); color: var(--ink); }
+  button.cta.coral { background: var(--coral); color: var(--bg); }
+
+  /* results */
+  .result {
+    margin-top: 18px;
+    padding: 20px;
+    border-radius: 14px;
+    background: var(--bg);
+    border: 1px solid var(--ink);
+  }
+  .result.coral { background: var(--coral); color: var(--bg); }
+  .result.coral .badge { background: var(--bg); color: var(--coral); }
+  .result.coral .nutri { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.3); }
+  .result.coral .n-label, .result.coral .n-note { color: rgba(255,255,255,0.75); }
+  .result h3 {
+    margin: 0 0 2px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .result.coral h3 { color: rgba(255,255,255,0.7); }
+  .big-num {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 56px;
+    line-height: 1;
+    letter-spacing: -3px;
+    margin: 6px 0 10px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .big-num .unit {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    letter-spacing: 0;
+    font-family: 'Inter Tight', sans-serif;
+  }
+  .result.coral .big-num .unit { color: rgba(255,255,255,0.7); }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+  }
+  .nutri-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .nutri {
+    background: #fff;
+    border: 1px solid rgba(15,15,18,0.15);
+    border-radius: 12px;
+    padding: 12px 14px;
+  }
+  .nutri .n-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--muted);
+    display: flex; align-items: center; gap: 5px;
+    margin-bottom: 4px;
+  }
+  .nutri .n-value {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+  .nutri .n-note { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* scale slider */
+  .scale-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--muted); margin-top: -6px; margin-bottom: 16px;
+    font-weight: 500; letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+  input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(15,15,18,0.1);
+    border-radius: 999px;
+    border: none;
+    padding: 0;
+    margin: 10px 0 8px;
+    outline: none;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--acid);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--ink);
+    border: 3px solid var(--acid);
+    cursor: pointer;
+  }
+  .scale-display {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 72px;
+    text-align: center;
+    line-height: 1;
+    letter-spacing: -4px;
+    margin: 4px 0 0;
+  }
+  .scale-display .slash {
+    font-size: 24px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  /* chip group */
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 16px; }
+  .chip {
+    padding: 9px 14px;
+    border: 1px solid rgba(15,15,18,0.2);
+    border-radius: 999px;
+    background: #fff;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    display: flex; align-items: center; gap: 6px;
+    color: var(--ink-soft);
+  }
+  .chip:active { transform: scale(0.97); }
+  .chip.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .yn button {
+    padding: 13px;
+    border: 1px solid rgba(15,15,18,0.2);
+    border-radius: 12px;
+    background: #fff;
+    font-family: 'Inter Tight', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    cursor: pointer;
+    color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: all 0.15s ease;
+  }
+  .yn button:active { transform: scale(0.97); }
+  .yn button.on.yes { background: var(--acid); color: var(--ink); border-color: var(--ink); }
+  .yn button.on.no { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+  /* history */
+  .history-item {
+    background: transparent;
+    border: 1px solid rgba(15,15,18,0.12);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px;
+    transition: border-color 0.15s ease;
+  }
+  .history-item:hover { border-color: rgba(15,15,18,0.3); }
+  .history-item .when {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .history-item .what {
+    font-family: 'Fraunces', serif;
+    font-weight: 400;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+  }
+  .mood-dot {
+    min-width: 40px; height: 40px; border-radius: 10px;
+    border: 1px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 500;
+    font-family: 'Fraunces', serif;
+    font-size: 16px;
+    flex-shrink: 0;
+    padding: 0 6px;
+  }
+
+  .empty {
+    text-align: center;
+    padding: 28px 12px;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+    font-family: 'Fraunces', serif;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 22px;
+    padding: 0 20px;
+    line-height: 1.6;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    flex-wrap: wrap;
+  }
+  .footer-note .dv { opacity: 0.3; }
+
+  details { margin-top: 12px; }
+  details summary {
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--muted);
+    list-style: none;
+    display: flex; align-items: center; gap: 6px;
+  }
+  details summary::-webkit-details-marker { display: none; }
+  details[open] summary { margin-bottom: 8px; color: var(--ink); }
+  details summary .chev { transition: transform 0.2s; }
+  details[open] summary .chev { transform: rotate(180deg); }
+
+  .tag-list {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    margin-top: 6px;
+  }
+  .tag-list .t {
+    font-size: 10px;
+    background: rgba(15,15,18,0.06);
+    color: var(--ink-soft);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    text-transform: lowercase;
+  }
+
+  .clear-btn {
+    background: transparent;
+    border: none;
+    font-size: 11px;
+    color: var(--muted);
+    text-decoration: underline;
+    text-decoration-color: rgba(15,15,18,0.25);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 4px;
+    font-family: inherit;
+  }
+
+  .streak {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--acid);
+    border: 1px solid var(--ink);
+    border-radius: 14px;
+    padding: 13px 16px;
+    margin-bottom: 14px;
+  }
+  .streak .ic { stroke: var(--ink); }
+  .streak .txt { font-weight: 500; font-size: 13px; color: var(--ink); flex: 1; }
+  .streak .txt b { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; letter-spacing: -0.5px; display: block; line-height: 1.1; }
+
+  /* divider */
+  .hr-dot {
+    display: flex; align-items: center; gap: 6px;
+    margin: 18px 0 12px;
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+  .hr-dot::before, .hr-dot::after {
+    content: ''; flex: 1; height: 1px;
+    background: rgba(15,15,18,0.15);
+  }
+
+  /* toast */
+  .toast {
+    position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%);
+    background: var(--ink); color: var(--bg);
+    padding: 12px 18px; border-radius: 12px;
+    font-weight: 500; font-size: 13px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    z-index: 999; max-width: 90%; text-align: center;
+    display: flex; align-items: center; gap: 8px;
+    transition: opacity 0.3s ease;
+  }
+  .toast .ic { stroke: var(--acid); }
+
+  /* note card */
+  .note-card {
+    background: var(--peri);
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+    border: 1px solid var(--ink);
+  }
+  .note-card p {
+    font-size: 13px; line-height: 1.5; margin: 0;
+    color: var(--ink);
+  }
+  .note-card .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+    text-transform: uppercase; color: var(--ink);
+    margin-bottom: 6px; display: inline-block;
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="logo">glow<span class="dot"></span></div>
+    <div class="date-chip">
+      <svg class="ic sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+      <span id="dateChip">today</span>
+    </div>
+  </header>
+
+  <div class="affirm">
+    <div class="affirm-label">
+      <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>today's reminder</span>
+    </div>
+    <div class="affirm-text" id="affirm">you're doing better than you think.</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="vibe">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M12 3l1.9 4.6L18.5 9l-3.6 3.1 1.1 4.8L12 14.5 8 16.9l1.1-4.8L5.5 9l4.6-1.4L12 3z"/></svg>
+      check-in
+    </button>
+    <button class="tab" data-tab="body">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M11 20a7 7 0 01-7-7c0-3 1-6 4-8 1 1 2 3 2 5a5 5 0 005 5c1 0 3-1 4-2-1 4-4 7-8 7z"/></svg>
+      nourish
+    </button>
+    <button class="tab" data-tab="move">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M3 12h3l3-8 4 16 3-8h5"/></svg>
+      move
+    </button>
+  </div>
+
+  <!-- VIBE PANEL -->
+  <section class="panel active" id="panel-vibe">
+    <div id="streakBox"></div>
+
+    <div class="card">
+      <h2 class="card-title">today's check-in</h2>
+      <p class="card-sub">no judgment, no pressure. just you, tuning in.</p>
+
+      <label>how are you feeling?</label>
+      <div class="scale-display"><span id="moodDisplay">7</span><span class="slash">/10</span></div>
+      <input type="range" id="moodSlider" min="1" max="10" value="7" />
+      <div class="scale-label">
+        <span>rough</span><span>glowing</span>
+      </div>
+
+      <label>did you move your body today?</label>
+      <div class="yn">
+        <button class="ynbtn yes" data-q="moved" data-v="yes">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg> yes, in some way
+        </button>
+        <button class="ynbtn no" data-q="moved" data-v="no">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg> not today
+        </button>
+      </div>
+
+      <label>did you do something you love?</label>
+      <div class="yn">
+        <button class="ynbtn yes" data-q="joy" data-v="yes">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg> yes
+        </button>
+        <button class="ynbtn no" data-q="joy" data-v="no">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg> nope
+        </button>
+      </div>
+
+      <label>quality time with people you love?</label>
+      <div class="yn">
+        <button class="ynbtn yes" data-q="people" data-v="yes">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg> yes
+        </button>
+        <button class="ynbtn no" data-q="people" data-v="no">
+          <svg class="ic sm" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg> not today
+        </button>
+      </div>
+
+      <label>energy right now</label>
+      <div class="chips" id="energyChips">
+        <div class="chip" data-v="drained">drained</div>
+        <div class="chip" data-v="flat">flat</div>
+        <div class="chip" data-v="steady">steady</div>
+        <div class="chip" data-v="bright">bright</div>
+        <div class="chip" data-v="electric">electric</div>
+      </div>
+
+      <label>anything good to remember?</label>
+      <textarea id="note" placeholder="a win, a compliment, a song on repeat, something that made you laugh…"></textarea>
+
+      <button class="cta" id="saveVibe">
+        <svg class="ic sm" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        save today's check-in
+      </button>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">recent check-ins</h2>
+      <p class="card-sub">patterns you'll want to see later.</p>
+      <div id="vibeHistory"></div>
+    </div>
+  </section>
+
+  <!-- BODY / NUTRITION PANEL -->
+  <section class="panel" id="panel-body">
+    <div class="card">
+      <h2 class="card-title">nourishment snapshot</h2>
+      <p class="card-sub">food is fuel, comfort, culture & joy — not math. gentle guidelines, never rules.</p>
+
+      <div class="row">
+        <div>
+          <label>age</label>
+          <input type="number" id="age" min="10" max="100" placeholder="21" />
+        </div>
+        <div>
+          <label>you are</label>
+          <select id="sex">
+            <option value="female">female</option>
+            <option value="male">male</option>
+            <option value="other">other / rather not say</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>height (cm)</label>
+          <input type="number" id="height" min="100" max="230" placeholder="170" />
+        </div>
+        <div>
+          <label>weight (kg)</label>
+          <input type="number" id="weight" min="30" max="200" placeholder="65" />
+        </div>
+      </div>
+      <label>how active is your life?</label>
+      <select id="activity">
+        <option value="1.2">mostly chill — mostly sitting</option>
+        <option value="1.375" selected>light — 1 to 3x a week</option>
+        <option value="1.55">active — 3 to 5x a week</option>
+        <option value="1.725">very active — 6 to 7x a week</option>
+        <option value="1.9">athlete mode — 2x a day</option>
+      </select>
+
+      <button class="cta acid" id="calcBmi">
+        <svg class="ic sm" viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M4 12h16M12 4v16"/></svg>
+        show my snapshot
+      </button>
+
+      <div class="result" id="bmiResult" style="display:none;">
+        <h3>your snapshot</h3>
+        <div class="big-num"><span id="bmiNum">–</span><span class="unit">bmi</span></div>
+        <span class="badge" id="bmiBadge">balanced zone</span>
+        <p id="bmiMsg" style="margin:14px 0 0; font-size:13px; line-height:1.5; color: var(--ink-soft);"></p>
+
+        <div class="nutri-grid">
+          <div class="nutri">
+            <div class="n-label">
+              <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 2a5 5 0 00-5 5c0 3 2 4 2 7h6c0-3 2-4 2-7a5 5 0 00-5-5z"/><path d="M9 17h6M10 21h4"/></svg>
+              protein
+            </div>
+            <div class="n-value" id="protein">–</div>
+            <div class="n-note">grams / day</div>
+          </div>
+          <div class="nutri">
+            <div class="n-label">
+              <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 2v20M6 6l6 6-6 6M18 6l-6 6 6 6"/></svg>
+              fiber
+            </div>
+            <div class="n-value" id="fiber">–</div>
+            <div class="n-note">grams / day</div>
+          </div>
+          <div class="nutri">
+            <div class="n-label">
+              <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 2s6 8 6 13a6 6 0 01-12 0c0-5 6-13 6-13z"/></svg>
+              water
+            </div>
+            <div class="n-value" id="water">–</div>
+            <div class="n-note">liters / day</div>
+          </div>
+          <div class="nutri">
+            <div class="n-label">
+              <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 2v4M12 18v4M4 12H2M22 12h-2M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/><circle cx="12" cy="12" r="4"/></svg>
+              energy
+            </div>
+            <div class="n-value" id="kcal">–</div>
+            <div class="n-note">kcal / day (approx)</div>
+          </div>
+        </div>
+
+        <details>
+          <summary>
+            <span>what do these numbers mean?</span>
+            <svg class="ic sm chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+          </summary>
+          <p style="font-size:12px; line-height:1.6; color: var(--ink-soft);">
+            rough averages from nutrition research — not targets. your body knows what it needs.
+            use them as a loose compass. if you feel rested, strong and clear-headed, that's the real metric.
+          </p>
+        </details>
+      </div>
+    </div>
+
+    <div class="note-card">
+      <span class="tag">note</span>
+      <p>BMI comes from an 1832 formula. it doesn't know your muscle, your bones, or your story. use it loosely, or skip it.</p>
+    </div>
+  </section>
+
+  <!-- MOVEMENT PANEL -->
+  <section class="panel" id="panel-move">
+    <div class="card">
+      <h2 class="card-title">movement log</h2>
+      <p class="card-sub">not burning "off" anything. celebrating what your body does.</p>
+
+      <label>what did you do?</label>
+      <select id="sport">
+        <option value="3.5">walking</option>
+        <option value="4.3">brisk walk</option>
+        <option value="9.8">running</option>
+        <option value="7.5">cycling</option>
+        <option value="7.0">swimming</option>
+        <option value="2.5">yoga</option>
+        <option value="3.0">pilates</option>
+        <option value="5.0">dancing</option>
+        <option value="8.0">hiit / bootcamp</option>
+        <option value="6.5">basketball</option>
+        <option value="7.0">soccer</option>
+        <option value="7.3">tennis</option>
+        <option value="6.0">hiking</option>
+        <option value="3.5">weight training</option>
+        <option value="8.0">rock climbing</option>
+        <option value="5.0">skateboarding</option>
+        <option value="3.0">surfing</option>
+        <option value="7.8">jump rope</option>
+        <option value="4.0">rollerskating</option>
+        <option value="5.5">boxing</option>
+      </select>
+
+      <label>how long? (minutes)</label>
+      <input type="number" id="duration" min="1" max="600" placeholder="30" />
+
+      <button class="cta coral" id="calcMove">
+        <svg class="ic sm" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+        log it
+      </button>
+
+      <div class="result coral" id="moveResult" style="display:none;">
+        <h3>nice work</h3>
+        <div class="big-num"><span id="kcalBurn">–</span><span class="unit">kcal moved</span></div>
+        <span class="badge">estimate · not a target</span>
+        <p id="moveMsg" style="margin:14px 0 0; font-size:13px; line-height:1.5;"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 class="card-title">your movement</h2>
+      <p class="card-sub">every way you've shown up.</p>
+      <div id="moveHistory"></div>
+    </div>
+  </section>
+
+  <div class="footer-note">
+    <svg class="ic sm" viewBox="0 0 24 24" style="opacity:0.5;"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 5V3a4 4 0 018 0v2"/></svg>
+    data stays on this device
+    <span class="dv">·</span>
+    <button class="clear-btn" id="clearAll">reset all</button>
+  </div>
+
+</div>
+
+<script>
+/* ---------- storage ---------- */
+const STORE = 'glow_app_v1';
+const load = () => {
+  try { return JSON.parse(localStorage.getItem(STORE)) || {}; }
+  catch { return {}; }
+};
+const save = (data) => localStorage.setItem(STORE, JSON.stringify(data));
+let state = load();
+state.profile = state.profile || {};
+state.vibes = state.vibes || [];
+state.moves = state.moves || [];
+state.currentVibe = state.currentVibe || { mood: 7, moved: null, joy: null, people: null, energy: null, note: '' };
+
+/* ---------- date ---------- */
+const today = new Date();
+const todayKey = today.toISOString().slice(0, 10);
+const fmtDay = today.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toLowerCase();
+document.getElementById('dateChip').textContent = fmtDay;
+
+/* ---------- affirmations ---------- */
+const AFFIRMS = [
+  "you're doing better than you <em>think.</em>",
+  "rest is <em>productive</em> too.",
+  "small wins count. <em>all</em> of them.",
+  "your body isn't a <em>before</em> photo.",
+  "you get to <em>define</em> what healthy means.",
+  "progress over <em>perfection</em>, always.",
+  "feel it, then <em>release</em> it.",
+  "you're allowed to take up <em>space.</em>",
+  "soft days are still <em>good</em> days.",
+  "you are the <em>main character.</em>",
+  "slower isn't <em>lazy.</em> it's human.",
+  "your worth isn't on a <em>scale.</em>"
+];
+document.getElementById('affirm').innerHTML = AFFIRMS[new Date().getDate() % AFFIRMS.length];
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+
+/* ---------- vibe: mood slider ---------- */
+const moodSlider = document.getElementById('moodSlider');
+const moodDisplay = document.getElementById('moodDisplay');
+moodSlider.value = state.currentVibe.mood || 7;
+moodDisplay.textContent = moodSlider.value;
+moodSlider.addEventListener('input', () => {
+  moodDisplay.textContent = moodSlider.value;
+  state.currentVibe.mood = +moodSlider.value;
+});
+
+/* ---------- vibe: yes/no ---------- */
+document.querySelectorAll('.ynbtn').forEach(btn => {
+  const q = btn.dataset.q;
+  if (state.currentVibe[q] === btn.dataset.v) btn.classList.add('on', btn.dataset.v);
+  btn.addEventListener('click', () => {
+    document.querySelectorAll(`.ynbtn[data-q="${q}"]`).forEach(b => b.classList.remove('on', 'yes', 'no'));
+    btn.classList.add('on', btn.dataset.v);
+    state.currentVibe[q] = btn.dataset.v;
+  });
+});
+
+/* ---------- vibe: energy chips ---------- */
+document.querySelectorAll('#energyChips .chip').forEach(chip => {
+  if (state.currentVibe.energy === chip.dataset.v) chip.classList.add('on');
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#energyChips .chip').forEach(c => c.classList.remove('on'));
+    chip.classList.add('on');
+    state.currentVibe.energy = chip.dataset.v;
+  });
+});
+
+/* ---------- vibe: note ---------- */
+const noteEl = document.getElementById('note');
+noteEl.value = state.currentVibe.note || '';
+noteEl.addEventListener('input', () => state.currentVibe.note = noteEl.value);
+
+/* ---------- vibe: save ---------- */
+document.getElementById('saveVibe').addEventListener('click', () => {
+  const entry = {
+    date: todayKey,
+    dateLabel: fmtDay,
+    ...state.currentVibe,
+    ts: Date.now()
+  };
+  state.vibes = state.vibes.filter(v => v.date !== todayKey);
+  state.vibes.unshift(entry);
+  state.vibes = state.vibes.slice(0, 30);
+  save(state);
+  renderHistory();
+  renderStreak();
+  toast("saved. proud of you for checking in.");
+});
+
+/* ---------- history ---------- */
+function renderHistory() {
+  const box = document.getElementById('vibeHistory');
+  if (!state.vibes.length) {
+    box.innerHTML = '<div class="empty">your first check-in will live here.</div>';
+    return;
+  }
+  box.innerHTML = state.vibes.map(v => {
+    const tags = [];
+    if (v.moved === 'yes') tags.push('moved');
+    if (v.joy === 'yes') tags.push('joy');
+    if (v.people === 'yes') tags.push('connection');
+    if (v.energy) tags.push(v.energy);
+    const color = moodColor(v.mood);
+    return `
+      <div class="history-item">
+        <div style="flex:1; min-width:0;">
+          <div class="when">${v.dateLabel || v.date}</div>
+          <div class="what">${v.note ? escape(v.note.slice(0,60)) + (v.note.length>60?'…':'') : 'check-in saved'}</div>
+          ${tags.length ? `<div class="tag-list">${tags.map(t => `<span class="t">${t}</span>`).join('')}</div>` : ''}
+        </div>
+        <div class="mood-dot" style="background:${color};">${v.mood}</div>
+      </div>`;
+  }).join('');
+}
+function moodColor(m) {
+  const map = { 1:'#F4C6C1',2:'#F4C6C1',3:'#FFD4BC',4:'#FFD4BC',5:'#F1ECE2',6:'#F1ECE2',7:'#C3D4B8',8:'#C3D4B8',9:'#D4FF3C',10:'#D4FF3C' };
+  return map[m] || '#F1ECE2';
+}
+
+function renderStreak() {
+  const box = document.getElementById('streakBox');
+  if (!state.vibes.length) { box.innerHTML = ''; return; }
+  let streak = 0;
+  const d = new Date();
+  while (true) {
+    const key = d.toISOString().slice(0,10);
+    if (state.vibes.find(v => v.date === key)) { streak++; d.setDate(d.getDate()-1); }
+    else break;
+    if (streak > 365) break;
+  }
+  if (streak < 1) { box.innerHTML = ''; return; }
+  const word = streak === 1 ? 'day' : 'days';
+  box.innerHTML = `
+    <div class="streak">
+      <svg class="ic lg" viewBox="0 0 24 24"><path d="M12 2s4 4 4 8a4 4 0 11-8 0c0-1 .3-2 1-3 0 2 1 2 2 2 0-3 1-5 1-7z"/><path d="M8 14c-1 1-2 3-2 5a6 6 0 0012 0c0-2-1-4-2-5"/></svg>
+      <div class="txt"><b>${streak} ${word}</b>of checking in with yourself</div>
+    </div>`;
+}
+
+/* ---------- BMI / Nutrition ---------- */
+['age','height','weight','sex','activity'].forEach(id => {
+  const el = document.getElementById(id);
+  if (state.profile[id] !== undefined) el.value = state.profile[id];
+  el.addEventListener('change', () => { state.profile[id] = el.value; save(state); });
+});
+
+document.getElementById('calcBmi').addEventListener('click', () => {
+  const age = +document.getElementById('age').value;
+  const h = +document.getElementById('height').value;
+  const w = +document.getElementById('weight').value;
+  const sex = document.getElementById('sex').value;
+  const act = +document.getElementById('activity').value;
+  if (!age || !h || !w) { toast("fill in age, height and weight first."); return; }
+
+  state.profile = { age, height:h, weight:w, sex, activity:act };
+  save(state);
+
+  const bmi = w / Math.pow(h/100, 2);
+  const bmiR = bmi.toFixed(1);
+  let label, msg;
+  if (bmi < 18.5) { label = 'gentle zone'; msg = "your body may want more fuel. focus on nourishing, energy-rich foods you actually enjoy."; }
+  else if (bmi < 25) { label = 'balanced zone'; msg = "your body is in a balanced range. keep listening to hunger, cravings and rest cues."; }
+  else if (bmi < 30) { label = 'curved zone'; msg = "BMI says this, but BMI is messy. focus on how you feel, sleep, movement, and foods that excite you."; }
+  else { label = 'your zone'; msg = "numbers don't define you. prioritize sleep, hydration, joyful movement, and meals that feel good."; }
+
+  document.getElementById('bmiNum').textContent = bmiR;
+  document.getElementById('bmiBadge').textContent = label;
+  document.getElementById('bmiMsg').textContent = msg;
+
+  const pFactor = act >= 1.55 ? 1.6 : act >= 1.375 ? 1.3 : 1.1;
+  const protein = Math.round(w * pFactor);
+
+  let bmr;
+  if (sex === 'male') bmr = 10*w + 6.25*h - 5*age + 5;
+  else bmr = 10*w + 6.25*h - 5*age - 161;
+  const kcal = Math.round(bmr * act);
+  const fiber = Math.round((kcal / 1000) * 14);
+  const water = (w * 0.035).toFixed(1);
+
+  document.getElementById('protein').textContent = protein + 'g';
+  document.getElementById('fiber').textContent = fiber + 'g';
+  document.getElementById('water').textContent = water + 'L';
+  document.getElementById('kcal').textContent = kcal;
+
+  document.getElementById('bmiResult').style.display = 'block';
+  document.getElementById('bmiResult').scrollIntoView({ behavior:'smooth', block:'nearest' });
+});
+
+/* ---------- Movement ---------- */
+document.getElementById('calcMove').addEventListener('click', () => {
+  const met = +document.getElementById('sport').value;
+  const sportTxt = document.getElementById('sport').selectedOptions[0].text;
+  const min = +document.getElementById('duration').value;
+  const w = +state.profile.weight;
+  if (!min) { toast("how long did you move?"); return; }
+  if (!w) { toast("add your weight in the nourish tab first."); return; }
+
+  const kcal = Math.round(met * w * (min/60));
+
+  const msgs = [
+    "every minute counts. thank your body.",
+    "movement as care, not punishment.",
+    "your future self is smiling.",
+    "this is what strong feels like.",
+    "you showed up. that's the whole thing."
+  ];
+  document.getElementById('kcalBurn').textContent = kcal;
+  document.getElementById('moveMsg').textContent = msgs[Math.floor(Math.random()*msgs.length)];
+  document.getElementById('moveResult').style.display = 'block';
+
+  state.moves.unshift({ date: todayKey, dateLabel: fmtDay, sport: sportTxt, minutes: min, kcal, ts: Date.now() });
+  state.moves = state.moves.slice(0, 40);
+  save(state);
+  renderMoveHistory();
+});
+
+function renderMoveHistory() {
+  const box = document.getElementById('moveHistory');
+  if (!state.moves.length) {
+    box.innerHTML = '<div class="empty">your movement will show up here.</div>';
+    return;
+  }
+  box.innerHTML = state.moves.map(m => `
+    <div class="history-item">
+      <div style="flex:1; min-width:0;">
+        <div class="when">${m.dateLabel || m.date}</div>
+        <div class="what">${escape(m.sport)} · ${m.minutes} min</div>
+      </div>
+      <div class="mood-dot" style="background:var(--coral); color:var(--bg); border-color:var(--coral);">
+        ${m.kcal}
+      </div>
+    </div>`).join('');
+}
+
+/* ---------- reset ---------- */
+document.getElementById('clearAll').addEventListener('click', () => {
+  if (confirm("this will clear all your saved data. sure?")) {
+    localStorage.removeItem(STORE);
+    location.reload();
+  }
+});
+
+/* ---------- toast ---------- */
+function toast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = `<svg class="ic sm" viewBox="0 0 24 24"><path d="M5 12l4 4 10-10"/></svg><span>${escape(msg)}</span>`;
+  document.body.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 2200);
+  setTimeout(() => t.remove(), 2600);
+}
+
+function escape(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ---------- init ---------- */
+renderHistory();
+renderStreak();
+renderMoveHistory();
+
+if (state.profile.weight && state.profile.height && state.profile.age) {
+  document.getElementById('calcBmi').click();
+  document.querySelectorAll('.tab')[0].click();
+}
+</script>
+</body>
+</html>
