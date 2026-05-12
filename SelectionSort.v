@@ -1,8 +1,8 @@
 (** * Selection Sort in Rocq (Coq)
     Full implementation + correctness proof.
-    Requires Coq/Rocq standard library. *)
+    Requires Coq/Rocq >= 8.14 standard library. *)
 
-From Stdlib Require Import List Permutation Arith Bool Recdef.
+From Stdlib Require Import List Permutation Arith Bool Lia Recdef.
 Import ListNotations.
 
 (* ================================================================= *)
@@ -34,6 +34,10 @@ Fixpoint selsort (l : list nat) (n : nat) : list nat :=
 Definition selection_sort (l : list nat) : list nat :=
   selsort l (length l).
 
+(* quick sanity checks *)
+Example sort_ex1 : selection_sort [3;1;4;1;5;9;2;6;5;3;5] = [1;1;2;3;3;4;5;5;5;6;9].
+Proof. reflexivity. Qed.
+
 (* ================================================================= *)
 (** ** Sortedness *)
 
@@ -48,7 +52,7 @@ Definition is_a_sorting_algorithm (f : list nat -> list nat) :=
   forall al, Permutation al (f al) /\ sorted (f al).
 
 (* ================================================================= *)
-(** ** le_all notation *)
+(** ** le_all *)
 
 Definition le_all x xs := Forall (fun y => x <= y) xs.
 Hint Unfold le_all : core.
@@ -67,10 +71,7 @@ Proof.
     destruct (x <=? h) eqn:Hle.
     + destruct (select x t) as [j l'] eqn:Esel.
       injection Hsel as <- <-.
-      (* x::h::t ~ j::h::l' *)
-      (* By IH: x::t ~ j::l' *)
       specialize (IH j l' Esel).
-      (* Permutation (x::h::t) (j::h::l') *)
       apply perm_trans with (h :: x :: t).
       * apply perm_swap.
       * apply perm_trans with (h :: j :: l').
@@ -78,9 +79,7 @@ Proof.
         -- apply perm_swap.
     + destruct (select h t) as [j l'] eqn:Esel.
       injection Hsel as <- <-.
-      (* x::h::t ~ j::x::l' *)
       specialize (IH j l' Esel).
-      (* Permutation (h::t) (j::l') *)
       apply perm_trans with (h :: x :: t).
       * apply perm_swap.
       * apply perm_skip. exact IH.
@@ -92,14 +91,14 @@ Proof.
   intros x l y r Hsel.
   apply select_perm in Hsel.
   apply Permutation_length in Hsel.
-  simpl in Hsel. omega.
+  simpl in Hsel. lia.
 Qed.
 
 Lemma select_fst_leq : forall al bl x y,
     select x al = (y, bl) -> y <= x.
 Proof.
   induction al as [| h t IH]; intros bl x y Hsel.
-  - simpl in Hsel. injection Hsel as <- <-. le_refl.
+  - simpl in Hsel. injection Hsel as <- <-. lia.
   - simpl in Hsel.
     destruct (x <=? h) eqn:Hle.
     + destruct (select x t) as [j l'] eqn:Esel.
@@ -109,7 +108,7 @@ Proof.
       injection Hsel as <- <-.
       apply Nat.leb_gt in Hle.
       specialize (IH l' h j Esel).
-      omega.
+      lia.
 Qed.
 
 Lemma select_smallest : forall al bl x y,
@@ -117,17 +116,15 @@ Lemma select_smallest : forall al bl x y,
 Proof.
   induction al as [| h t IH]; intros bl x y Hsel.
   - simpl in Hsel. injection Hsel as <- <-.
-    unfold le_all. apply Forall_nil.
+    apply Forall_nil.
   - simpl in Hsel.
     destruct (x <=? h) eqn:Hle.
     + destruct (select x t) as [j l'] eqn:Esel.
       injection Hsel as <- <-.
       apply Nat.leb_le in Hle.
       specialize (IH l' x j Esel).
-      (* y <=* h::l' *)
-      unfold le_all. apply Forall_cons.
-      * (* j <= h *)
-        apply le_trans with x.
+      apply Forall_cons.
+      * apply le_trans with x.
         -- apply select_fst_leq with t l'. exact Esel.
         -- exact Hle.
       * exact IH.
@@ -135,11 +132,10 @@ Proof.
       injection Hsel as <- <-.
       apply Nat.leb_gt in Hle.
       specialize (IH l' h j Esel).
-      unfold le_all. apply Forall_cons.
-      * (* j <= x *)
-        apply le_trans with h.
+      apply Forall_cons.
+      * apply le_trans with h.
         -- apply select_fst_leq with t l'. exact Esel.
-        -- omega.
+        -- lia.
       * exact IH.
 Qed.
 
@@ -153,15 +149,13 @@ Proof.
     + destruct (select x t) as [j l'] eqn:Esel.
       injection Hsel as <- <-.
       specialize (IH l' x j Esel).
-      simpl in IH. simpl.
-      destruct IH as [-> | Hin].
+      simpl in *. destruct IH as [-> | Hin].
       * left. reflexivity.
       * right. right. exact Hin.
     + destruct (select h t) as [j l'] eqn:Esel.
       injection Hsel as <- <-.
       specialize (IH l' h j Esel).
-      simpl in IH. simpl.
-      destruct IH as [-> | Hin].
+      simpl in *. destruct IH as [-> | Hin].
       * right. left. reflexivity.
       * right. right. exact Hin.
 Qed.
@@ -186,23 +180,19 @@ Proof.
   induction n as [| n' IH]; intros l Hlen.
   - destruct l; simpl in Hlen; [apply Permutation_refl | discriminate].
   - destruct l as [| x r].
-    + simpl. apply Permutation_refl.
+    + apply Permutation_refl.
     + simpl.
       destruct (select x r) as [y r'] eqn:Esel.
       apply perm_trans with (y :: r').
       * apply select_perm. exact Esel.
-      * apply perm_skip.
-        apply IH.
-        simpl in Hlen.
-        apply select_rest_length in Esel.
-        omega.
+      * apply perm_skip. apply IH.
+        apply select_rest_length in Esel. simpl in Hlen. lia.
 Qed.
 
 Lemma selection_sort_perm : forall l,
     Permutation l (selection_sort l).
 Proof.
-  intro l. unfold selection_sort.
-  apply selsort_perm. reflexivity.
+  intro l. unfold selection_sort. apply selsort_perm. reflexivity.
 Qed.
 
 (* ================================================================= *)
@@ -220,8 +210,7 @@ Proof.
   - apply sorted_cons.
     + apply le_all__le_one with bl.
       * exact Hle.
-      * (* h is in bl, via permutation *)
-        assert (Hperm : Permutation bl (selsort bl n)).
+      * assert (Hperm : Permutation bl (selsort bl n)).
         { apply selsort_perm. exact Hlen. }
         rewrite E in Hperm.
         apply Permutation_in with (h :: t).
@@ -240,23 +229,21 @@ Proof.
     + simpl.
       destruct (select x r) as [y r'] eqn:Esel.
       apply cons_of_small_maintains_sort.
-      * apply select_rest_length in Esel. simpl in Hlen. omega.
+      * apply select_rest_length in Esel. simpl in Hlen. lia.
       * apply select_smallest with x r. exact Esel.
-      * apply IH. apply select_rest_length in Esel. simpl in Hlen. omega.
+      * apply IH. apply select_rest_length in Esel. simpl in Hlen. lia.
 Qed.
 
 Lemma selection_sort_sorted : forall al,
     sorted (selection_sort al).
 Proof.
-  intro al. unfold selection_sort.
-  apply selsort_sorted. reflexivity.
+  intro al. unfold selection_sort. apply selsort_sorted. reflexivity.
 Qed.
 
 Theorem selection_sort_is_correct :
     is_a_sorting_algorithm selection_sort.
 Proof.
-  unfold is_a_sorting_algorithm. intro al.
-  split.
+  unfold is_a_sorting_algorithm. intro al. split.
   - apply selection_sort_perm.
   - apply selection_sort_sorted.
 Qed.
@@ -264,7 +251,7 @@ Qed.
 (* ================================================================= *)
 (** ** selsort' using Function + measure (no fuel) *)
 
-Function selsort' l {measure length l} :=
+Function selsort' (l : list nat) {measure length l} : list nat :=
   match l with
   | []     => []
   | x :: r =>
@@ -272,8 +259,9 @@ Function selsort' l {measure length l} :=
       y :: selsort' r'
   end.
 Proof.
-  intros l x r _ y r' Esel.
-  simpl. apply select_rest_length in Esel. omega.
+  (* goal: length r' < length (x :: r) *)
+  intros l x r _ y r' Hsel.
+  simpl. apply select_rest_length in Hsel. lia.
 Defined.
 
 Example selsort'_example :
@@ -286,15 +274,13 @@ Proof.
   induction n as [| n' IH]; intros l Hlen.
   - destruct l; simpl in Hlen; [apply Permutation_refl | discriminate].
   - destruct l as [| x r].
-    + simpl. apply Permutation_refl.
+    + apply Permutation_refl.
     + rewrite selsort'_equation.
       destruct (select x r) as [y r'] eqn:Esel.
       apply perm_trans with (y :: r').
       * apply select_perm. exact Esel.
-      * apply perm_skip.
-        apply IH.
-        apply select_rest_length in Esel.
-        simpl in Hlen. omega.
+      * apply perm_skip. apply IH.
+        apply select_rest_length in Esel. simpl in Hlen. lia.
 Qed.
 
 Lemma cons_of_small_maintains_sort' : forall bl y,
@@ -330,14 +316,13 @@ Proof.
       destruct (select x r) as [y r'] eqn:Esel.
       apply cons_of_small_maintains_sort'.
       * apply select_smallest with x r. exact Esel.
-      * apply IH. apply select_rest_length in Esel. simpl in Hlen. omega.
+      * apply IH. apply select_rest_length in Esel. simpl in Hlen. lia.
 Qed.
 
 Theorem selsort'_is_correct :
     is_a_sorting_algorithm selsort'.
 Proof.
-  unfold is_a_sorting_algorithm. intro al.
-  split.
+  unfold is_a_sorting_algorithm. intro al. split.
   - apply selsort'_perm with (length al). reflexivity.
   - apply selsort'_sorted with (length al). reflexivity.
 Qed.
